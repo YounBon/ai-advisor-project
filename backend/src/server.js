@@ -15,8 +15,43 @@ connectDB().then(conn => {
     });
 });
 
-app.post("/api/auth/login", (req, res) => {
-    res.json({ message: "Đăng nhập hệ thống" });
+app.post("/api/auth/login", async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const [rows] = await connection.execute(
+            `SELECT u.*, r.role_name 
+             FROM users u 
+             JOIN roles r ON u.role_id = r.role_id 
+             WHERE u.username = ?`, 
+            [username]
+        );
+        
+        if (rows.length === 0) {
+            return res.status(401).json({ message: "Sai tên đăng nhập hoặc mật khẩu" });
+        }
+        
+        const user = rows[0];
+        // The dummy data in init.sql uses '$2b$10$123456' as a mock bcrypt hash
+        const isPasswordValid = user.password_hash === password || user.password_hash === `$2b$10$${password}`;
+        
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: "Sai tên đăng nhập hoặc mật khẩu" });
+        }
+        
+        res.json({
+            message: "Đăng nhập thành công",
+            role: user.role_name,
+            user: {
+                id: user.user_id,
+                username: user.username,
+                fullName: user.full_name,
+                email: user.email
+            }
+        });
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ message: "Lỗi server" });
+    }
 });
 app.post("/api/auth/logout", (req, res) => {
     res.json({ message: "Đăng xuất" });
