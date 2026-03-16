@@ -3,7 +3,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
@@ -35,7 +35,7 @@ export default function Login() {
             // Backend cần trả về { role: "Student" | "Advisor" | "Faculty" }
             const role = res.data.role || "Student"; // Nếu backend chưa trả về role, mặc định Student
             if (role === "Student") {
-                navigate("/dashboard/student");
+                navigate("/student/academic");
             } else if (role === "Advisor") {
                 navigate("/dashboard/advisor");
             } else if (role === "Faculty") {
@@ -43,8 +43,23 @@ export default function Login() {
             } else {
                 setErrorMsg("Role không hợp lệ");
             }
-        } catch (err: any) {
-            setErrorMsg(err.response?.data?.message || "Đăng nhập thất bại");
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                const data = err.response?.data;
+                const serverMessage =
+                    typeof data === "object" && data !== null && "message" in data
+                        ? (data as { message?: unknown }).message
+                        : undefined;
+
+                setErrorMsg(
+                    typeof serverMessage === "string" && serverMessage.trim()
+                        ? serverMessage
+                        : "Đăng nhập thất bại"
+                );
+                return;
+            }
+
+            setErrorMsg("Đăng nhập thất bại");
         }
     };
 
