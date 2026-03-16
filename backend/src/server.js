@@ -83,8 +83,14 @@ app.post("/api/meeting", (req, res) => {
     res.json({ message: "Lưu biên bản SHCVHT" });
 });
 
-app.get("/api/dashboard/student", (req, res) => {
-    res.json({ message: "Dashboard sinh viên" });
+app.get("/api/dashboard/student/academic", (req, res) => {
+    res.json({ message: "Dữ liệu Tiến độ học tập" });
+});
+app.get("/api/dashboard/student/riskscore", (req, res) => {
+    res.json({ message: "Dữ liệu Điểm rủi ro" });
+});
+app.get("/api/dashboard/student/sentiment", (req, res) => {
+    res.json({ message: "Dữ liệu Xu hướng cảm xúc" });
 });
 app.get("/api/dashboard/advisor", (req, res) => {
     res.json({ message: "Dashboard CVHT" });
